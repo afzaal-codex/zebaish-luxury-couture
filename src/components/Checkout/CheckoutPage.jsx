@@ -156,7 +156,7 @@ export default function CheckoutPage() {
                 <line x1="50" y1="28" x2="50" y2="55" stroke="#111111" strokeWidth="4" />
               </svg>
             </div>
-            <h1 className="font-brand-title text-xl tracking-[0.3em] font-light text-black uppercase">
+            <h1 className="hidden sm:block font-brand-title text-xl tracking-[0.3em] font-light text-black uppercase">
               {BRAND.name}
             </h1>
           </div>
