@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, ChevronRight, Phone } from 'lucide-react';
 import { useShop } from '../../context/ShopContext';
 import { CURRENCIES } from '../../data/products';
@@ -15,7 +15,27 @@ export default function MobileMenuDrawer() {
     setCurrency
   } = useShop();
 
-  if (!isMenuOpen) return null;
+  // Handle smooth enter and exit animation
+  const [shouldRender, setShouldRender] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    if (isMenuOpen) {
+      setShouldRender(true);
+      const timer = setTimeout(() => setIsOpen(true), 20);
+      return () => clearTimeout(timer);
+    } else {
+      setIsOpen(false);
+      const timer = setTimeout(() => setShouldRender(false), 320);
+      return () => clearTimeout(timer);
+    }
+  }, [isMenuOpen]);
+
+  const handleClose = () => {
+    setIsMenuOpen(false);
+  };
+
+  if (!shouldRender) return null;
 
   const navItems = [
     { label: "CHIFFON ESSENTIALS '26", category: "Chiffon", highlight: true },
@@ -29,14 +49,20 @@ export default function MobileMenuDrawer() {
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden">
-      {/* Backdrop */}
+      {/* Backdrop with smooth fade in and fade out */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
-        onClick={() => setIsMenuOpen(false)}
+        className={`fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300 ease-in-out ${
+          isOpen ? 'opacity-100' : 'opacity-0'
+        }`}
+        onClick={handleClose}
       />
 
-      {/* Drawer content */}
-      <div className="absolute inset-y-0 left-0 max-w-sm w-full bg-white shadow-2xl flex flex-col z-10 animate-slide-in-right [animation-direction:reverse]">
+      {/* Drawer content: slides in from LEFT (-translate-x-full to translate-x-0) and slides out to LEFT */}
+      <div
+        className={`fixed inset-y-0 left-0 max-w-sm w-full bg-white shadow-2xl flex flex-col z-10 transform transition-transform duration-300 ease-in-out ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
         
         {/* Drawer Header */}
         <div className="p-6 border-b border-neutral-100 flex items-center justify-between">
@@ -47,7 +73,7 @@ export default function MobileMenuDrawer() {
             </h2>
           </div>
           <button
-            onClick={() => setIsMenuOpen(false)}
+            onClick={handleClose}
             className="p-2 text-neutral-600 hover:text-black transition-colors"
             aria-label="Close menu"
           >
@@ -61,7 +87,7 @@ export default function MobileMenuDrawer() {
             <button
               onClick={() => {
                 setCurrentPage('home');
-                setIsMenuOpen(false);
+                handleClose();
               }}
               className="w-full text-left text-[13px] tracking-[0.22em] uppercase font-sans font-medium text-neutral-900 hover:text-luxury-gold transition-colors flex items-center justify-between"
             >
@@ -74,7 +100,7 @@ export default function MobileMenuDrawer() {
                 key={idx}
                 onClick={() => {
                   viewCollection(item.category);
-                  setIsMenuOpen(false);
+                  handleClose();
                 }}
                 className={`w-full text-left text-[13px] tracking-[0.22em] uppercase font-sans transition-colors flex items-center justify-between ${
                   item.highlight
@@ -95,7 +121,7 @@ export default function MobileMenuDrawer() {
             <button
               onClick={() => {
                 setActivePolicy('sizes');
-                setIsMenuOpen(false);
+                handleClose();
               }}
               className="block text-left text-xs tracking-[0.15em] text-neutral-600 hover:text-black uppercase"
             >
@@ -104,7 +130,7 @@ export default function MobileMenuDrawer() {
             <button
               onClick={() => {
                 setActivePolicy('shipping');
-                setIsMenuOpen(false);
+                handleClose();
               }}
               className="block text-left text-xs tracking-[0.15em] text-neutral-600 hover:text-black uppercase"
             >
@@ -113,7 +139,7 @@ export default function MobileMenuDrawer() {
             <button
               onClick={() => {
                 setActivePolicy('returns');
-                setIsMenuOpen(false);
+                handleClose();
               }}
               className="block text-left text-xs tracking-[0.15em] text-neutral-600 hover:text-black uppercase"
             >

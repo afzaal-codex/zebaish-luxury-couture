@@ -51,7 +51,7 @@ export const ShopProvider = ({ children }) => {
     setToastMessage(msg);
     setTimeout(() => {
       setToastMessage(null);
-    }, 3500);
+    }, 3000);
   };
 
   // Currency Converter Formatter
@@ -64,7 +64,7 @@ export const ShopProvider = ({ children }) => {
     return `${cur.symbol} ${converted.toFixed(2)}`;
   };
 
-  // Add To Cart
+  // Add To Cart - No alert messages, just smoothly opens cart drawer
   const addToCart = (product, quantity = 1, variant = 'UNSTITCHED / DEFAULT', size = 'DEFAULT', type = 'UNSTITCHED') => {
     const existingIndex = cart.findIndex(
       (item) => item.product.id === product.id && item.variant === variant
@@ -86,7 +86,7 @@ export const ShopProvider = ({ children }) => {
       setCart([newItem, ...cart]);
     }
 
-    showToast(`Added ${product.name} to bag`);
+    // Direct smooth open of the cart drawer without any alert popups
     setIsCartOpen(true);
   };
 
@@ -111,10 +111,8 @@ export const ShopProvider = ({ children }) => {
   const toggleWishlist = (product) => {
     if (wishlist.some(p => p.id === product.id)) {
       setWishlist(wishlist.filter(p => p.id !== product.id));
-      showToast(`Removed ${product.name} from wishlist`);
     } else {
       setWishlist([...wishlist, product]);
-      showToast(`Saved ${product.name} to wishlist`);
     }
   };
 
@@ -130,16 +128,13 @@ export const ShopProvider = ({ children }) => {
     if (cleanCode === BRAND.discountCode || cleanCode === 'ZEBAISH10' || cleanCode === 'LUXURY10') {
       setDiscountPercent(10);
       setDiscountCode(cleanCode);
-      showToast('10% Luxury Discount Applied!');
       return { success: true, message: '10% discount applied!' };
     } else if (cleanCode === 'VIP20') {
       setDiscountPercent(20);
       setDiscountCode(cleanCode);
-      showToast('20% VIP Atelier Discount Applied!');
       return { success: true, message: '20% VIP discount applied!' };
     } else {
-      showToast(`Invalid code. Try ${BRAND.discountCode}`);
-      return { success: false, message: 'Invalid voucher code' };
+      return { success: false, message: `Invalid voucher. Try ${BRAND.discountCode}` };
     }
   };
 
@@ -161,12 +156,10 @@ export const ShopProvider = ({ children }) => {
   const loginUser = (email, name = 'Valued Client') => {
     setUser({ email, name });
     setIsLoginModalOpen(false);
-    showToast(`Welcome, ${email}`);
   };
 
   const logoutUser = () => {
     setUser(null);
-    showToast('Signed out successfully');
   };
 
   return (

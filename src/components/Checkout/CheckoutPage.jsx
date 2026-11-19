@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShoppingBag, ChevronDown, Check, HelpCircle, ArrowLeft, ShieldCheck } from 'lucide-react';
+import { ShoppingBag, ChevronDown, Check, HelpCircle, ArrowLeft, ShieldCheck, AlertCircle } from 'lucide-react';
 import { useShop } from '../../context/ShopContext';
 import { BRAND } from '../../config/brand';
 
@@ -34,6 +34,7 @@ export default function CheckoutPage() {
   
   const [couponInput, setCouponInput] = useState('');
   const [couponError, setCouponError] = useState('');
+  const [formError, setFormError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderComplete, setOrderComplete] = useState(null);
 
@@ -50,8 +51,11 @@ export default function CheckoutPage() {
 
   const handlePlaceOrder = (e) => {
     e.preventDefault();
+    setFormError('');
+
+    // Inline field validation without any browser alert popups
     if (!email || !firstName || !lastName || !address || !city || !phone) {
-      alert('Please fill in all required shipping fields.');
+      setFormError('Please fill in all required delivery and contact fields to proceed.');
       return;
     }
 
@@ -64,7 +68,7 @@ export default function CheckoutPage() {
         items: [...cart],
         subtotal: cartSubtotalPKR,
         total: cartTotalPKR,
-        paymentMethod: paymentMethod === 'card' ? 'Debit / Credit Card' : 'Cash on Delivery (COD)',
+        paymentMethod: paymentMethod === 'cod' ? 'Cash on Delivery (COD)' : 'Debit / Credit Card',
         shippingAddress: `${address}, ${apartment ? apartment + ', ' : ''}${city}, ${country}`,
         customerName: `${firstName} ${lastName}`,
         email: email
@@ -130,7 +134,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Checkout Navbar - matching screenshot 4 */}
+      {/* Checkout Navbar */}
       <div className="border-b border-neutral-200 py-6 px-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <button
@@ -422,14 +426,24 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Pay now Button */}
+            {/* Inline validation error without any browser alert popups */}
+            {formError && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded text-xs text-red-600 flex items-center gap-2 animate-fade-in">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{formError}</span>
+              </div>
+            )}
+
+            {/* Action Button: When COD is selected, button text becomes 'Buy now' */}
             <div>
               <button
                 onClick={handlePlaceOrder}
                 disabled={isSubmitting || cart.length === 0}
-                className="w-full py-4 bg-[#0d6efd] hover:bg-blue-600 text-white font-medium text-sm rounded transition-colors shadow-sm disabled:opacity-50"
+                className="w-full py-4 bg-[#0d6efd] hover:bg-blue-600 text-white font-medium text-sm rounded transition-all shadow-sm disabled:opacity-50 active:scale-[0.99]"
               >
-                {isSubmitting ? 'Processing Payment...' : 'Pay now'}
+                {isSubmitting
+                  ? (paymentMethod === 'cod' ? 'Placing Order...' : 'Processing Payment...')
+                  : (paymentMethod === 'cod' ? 'Buy now' : 'Pay now')}
               </button>
             </div>
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Minus, Plus, ShoppingBag, ArrowRight } from 'lucide-react';
 import { useShop } from '../../context/ShopContext';
 
@@ -18,38 +18,62 @@ export default function CartDrawer() {
   } = useShop();
 
   const [isNoteOpen, setIsNoteOpen] = useState(false);
+  const [shouldRender, setShouldRender] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
-  if (!isCartOpen) return null;
+  useEffect(() => {
+    if (isCartOpen) {
+      setShouldRender(true);
+      const timer = setTimeout(() => setIsOpen(true), 20);
+      return () => clearTimeout(timer);
+    } else {
+      setIsOpen(false);
+      const timer = setTimeout(() => setShouldRender(false), 320);
+      return () => clearTimeout(timer);
+    }
+  }, [isCartOpen]);
 
-  // Free shipping threshold: 150,000 for International, 0 for domestic (Free in Pakistan)
+  const handleClose = () => {
+    setIsCartOpen(false);
+  };
+
+  if (!shouldRender) return null;
+
+  // Free shipping threshold
   const freeIntlThreshold = 150000;
   const progressPercent = Math.min(100, Math.round((cartSubtotalPKR / freeIntlThreshold) * 100));
   const remainingForFree = Math.max(0, freeIntlThreshold - cartSubtotalPKR);
 
   const handleCheckoutClick = () => {
-    setIsCartOpen(false);
+    handleClose();
     setCurrentPage('checkout');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden">
-      {/* Dark Dimmed Backdrop - matching screenshot 3 */}
+      {/* Dark Dimmed Backdrop with fade */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300"
-        onClick={() => setIsCartOpen(false)}
+        className={`fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300 ease-in-out ${
+          isOpen ? 'opacity-100' : 'opacity-0'
+        }`}
+        onClick={handleClose}
       />
 
-      {/* Cart Drawer Right Side */}
-      <div className="absolute inset-y-0 right-0 max-w-md w-full bg-[#111111] text-white shadow-2xl flex flex-col z-10 animate-slide-in-right">
+      {/* Cart Drawer Right Side with smooth slide in / slide out */}
+      <div
+        className={`fixed inset-y-0 right-0 max-w-md w-full bg-[#111111] text-white shadow-2xl flex flex-col z-10 transform transition-transform duration-300 ease-in-out ${
+          isOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
         
-        {/* Drawer Header - matching screenshot 3: CART with X */}
+        {/* Drawer Header */}
         <div className="p-6 border-b border-neutral-800 flex items-center justify-between">
           <h2 className="text-sm font-sans tracking-[0.25em] font-medium uppercase text-white">
             CART
           </h2>
           <button
-            onClick={() => setIsCartOpen(false)}
+            onClick={handleClose}
             className="p-1 text-neutral-400 hover:text-white transition-colors"
             aria-label="Close cart"
           >
@@ -93,7 +117,7 @@ export default function CartDrawer() {
               </p>
               <button
                 onClick={() => {
-                  setIsCartOpen(false);
+                  handleClose();
                   setCurrentPage('collection');
                 }}
                 className="text-[11px] tracking-[0.2em] uppercase bg-white text-black py-3 px-6 hover:bg-luxury-gold hover:text-white transition-all font-medium"
@@ -104,7 +128,6 @@ export default function CartDrawer() {
           ) : (
             cart.map((item) => (
               <div key={item.id} className="pt-6 first:pt-0 flex gap-4">
-                {/* Product Thumbnail */}
                 <div className="w-24 h-32 flex-shrink-0 bg-neutral-900 overflow-hidden">
                   <img
                     src={item.product.primaryImage}
@@ -113,7 +136,6 @@ export default function CartDrawer() {
                   />
                 </div>
 
-                {/* Details */}
                 <div className="flex-1 flex flex-col justify-between">
                   <div>
                     <h3 className="text-xs font-sans tracking-[0.2em] uppercase font-medium text-white mb-1">
@@ -127,7 +149,6 @@ export default function CartDrawer() {
                     </p>
                   </div>
 
-                  {/* Quantity and Remove Button - exactly like screenshot 3 */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center border border-neutral-700 bg-black/40">
                       <button
@@ -162,7 +183,7 @@ export default function CartDrawer() {
           )}
         </div>
 
-        {/* Footer Area with Add Order Note & Checkout Button - exactly matching screenshot 3 */}
+        {/* Footer Area with Add Order Note & Checkout Button */}
         {cart.length > 0 && (
           <div className="p-6 bg-[#0a0a0a] border-t border-neutral-800 space-y-4">
             
@@ -188,12 +209,11 @@ export default function CartDrawer() {
               )}
             </div>
 
-            {/* Taxes and shipping note */}
             <p className="text-[10px] tracking-wider text-neutral-400">
               Taxes and shipping calculated at checkout
             </p>
 
-            {/* Checkout Button with Price: CHECKOUT • RS 6,950 */}
+            {/* Checkout Button with Price */}
             <button
               onClick={handleCheckoutClick}
               className="w-full py-4 px-6 bg-white hover:bg-neutral-200 text-black font-sans font-semibold text-xs tracking-[0.25em] uppercase transition-all duration-300 flex items-center justify-center gap-2 group shadow-lg"
@@ -210,4 +230,3 @@ export default function CartDrawer() {
     </div>
   );
 }
-
